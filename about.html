@@ -11,7 +11,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="styles.css">
-<link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
 </head>
 <body>
 
@@ -229,11 +228,6 @@
 </div>
 
 <script src="scripts.js" defer></script>
-<script type="module">
-  import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
-  createChat({
-    webhookUrl: 'https://n8n.srv1388391.hstgr.cloud/webhook/2fc1b31f-89bc-4152-b20a-2fe03fdb36ee/chat',
-  });
-</script>
+<script src="convoy-chat.js" defer></script>
 </body>
 </html>

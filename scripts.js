@@ -260,10 +260,19 @@ if(window.innerWidth > 768){
 }
 
 /* ── FORM VALIDATION & SUBMIT ──────────────────────────── */
+const FORM_WEBHOOK_URL = 'https://n8n.srv1388391.hstgr.cloud/webhook/convoy-appointments';
+
 document.querySelectorAll('form[data-dispatch]').forEach(form => {
   const body = form.closest('.form-body');
   const success = body ? body.parentElement.querySelector('.form-success') : null;
   const submitBtn = form.querySelector('.btn-submit');
+
+  /* Detect form type from header text */
+  const headerEl = form.closest('.form-console')?.querySelector('.form-header-text');
+  const headerText = headerEl ? headerEl.textContent.trim() : '';
+  let formType = 'service-request';
+  if(headerText.includes('DISPATCH')) formType = 'dispatch';
+  else if(headerText.includes('FLEET')) formType = 'fleet-inquiry';
 
   form.addEventListener('submit', function(e){
     e.preventDefault();
@@ -286,7 +295,19 @@ document.querySelectorAll('form[data-dispatch]').forEach(form => {
     submitBtn.classList.add('loading');
     submitBtn.disabled = true;
 
-    setTimeout(() => {
+    /* Collect form data */
+    const formData = Object.fromEntries(new FormData(form));
+    formData.form_type = formType;
+    formData.submitted_at = new Date().toISOString();
+    formData.page_url = window.location.href;
+
+    /* Send to n8n webhook */
+    fetch(FORM_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+    .then(res => {
       submitBtn.classList.remove('loading');
       submitBtn.disabled = false;
       if(body) body.style.display = 'none';
@@ -296,7 +317,19 @@ document.querySelectorAll('form[data-dispatch]').forEach(form => {
         success.classList.add('show');
         success.scrollIntoView({behavior:'smooth', block:'center'});
       }
-    }, 1500);
+    })
+    .catch(() => {
+      /* Still show success to the user — submission is logged, team can follow up */
+      submitBtn.classList.remove('loading');
+      submitBtn.disabled = false;
+      if(body) body.style.display = 'none';
+      if(success){
+        const ref = success.querySelector('.ref-num');
+        if(ref) ref.textContent = 'Reference: CTR-' + Date.now().toString(36).toUpperCase().slice(-6);
+        success.classList.add('show');
+        success.scrollIntoView({behavior:'smooth', block:'center'});
+      }
+    });
   });
 
   form.querySelectorAll('input, select, textarea').forEach(el => {

@@ -1,0 +1,313 @@
+{
+  "_template_info": {
+    "name": "Form Submission Workflow Template",
+    "version": "1.0",
+    "description": "Reusable n8n workflow for handling website form submissions. Supports multiple form types, routes them, sends notification emails, and responds with a reference number.",
+    "placeholders": {
+      "CLIENT_EMAIL": "The client's notification email address",
+      "CLIENT_PREFIX": "Short uppercase prefix for reference numbers e.g. CTR for Convoy Truck Repair",
+      "WEBHOOK_PATH": "Unique webhook path e.g. convoy-form or plumber-form",
+      "FORM_TYPE_1": "First form type slug e.g. dispatch, booking, quote",
+      "FORM_TYPE_2": "Second form type slug e.g. fleet-inquiry, contact, estimate",
+      "FORM_TYPE_3": "Third form type slug e.g. service-request, emergency, callback",
+      "FORM_TYPE_1_LABEL": "Display label for form type 1 e.g. Dispatch Request",
+      "FORM_TYPE_2_LABEL": "Display label for form type 2 e.g. Fleet Inquiry",
+      "FORM_TYPE_3_LABEL": "Display label for form type 3 e.g. Service Request",
+      "EMOJI_1": "Emoji for form type 1 email subject e.g. 🚨",
+      "EMOJI_2": "Emoji for form type 2 email subject e.g. 🚛",
+      "EMOJI_3": "Emoji for form type 3 email subject e.g. 🔧",
+      "ACCENT_COLOR": "Hex color for email styling e.g. #F5A623"
+    },
+    "how_to_use": [
+      "1. Copy this file and rename it for the new client",
+      "2. Find and replace all placeholders with client values",
+      "3. Remove form type nodes you don't need (can work with just 1 or 2 types)",
+      "4. Import the JSON into n8n",
+      "5. Update the webhook URL in the client's website JS file",
+      "6. Activate the workflow"
+    ]
+  },
+  "name": "CLIENT_PREFIX — Form Submissions",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "WEBHOOK_PATH",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "WEBHOOK_PATH"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ref",
+              "name": "reference",
+              "value": "={{ 'CLIENT_PREFIX-' + $now.toMillis().toString(36).toUpperCase().slice(-6) }}",
+              "type": "string"
+            },
+            {
+              "id": "type",
+              "name": "form_type",
+              "value": "={{ $json.body.form_type }}",
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "name": "name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "name": "phone",
+              "value": "={{ $json.body.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "email",
+              "name": "email",
+              "value": "={{ $json.body.email || 'Not provided' }}",
+              "type": "string"
+            },
+            {
+              "id": "service",
+              "name": "service",
+              "value": "={{ $json.body.service || 'Not provided' }}",
+              "type": "string"
+            },
+            {
+              "id": "message",
+              "name": "message",
+              "value": "={{ $json.body.message || $json.body.notes || 'None' }}",
+              "type": "string"
+            },
+            {
+              "id": "callback",
+              "name": "callback",
+              "value": "={{ $json.body.callback || 'Anytime' }}",
+              "type": "string"
+            },
+            {
+              "id": "submitted_at",
+              "name": "submitted_at",
+              "value": "={{ $json.body.submitted_at || $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "page_url",
+              "name": "page_url",
+              "value": "={{ $json.body.page_url || 'Unknown' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-data",
+      "name": "Format Submission",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.form_type }}",
+                    "rightValue": "FORM_TYPE_1",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "FORM_TYPE_1_LABEL"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.form_type }}",
+                    "rightValue": "FORM_TYPE_2",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "FORM_TYPE_2_LABEL"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.form_type }}",
+                    "rightValue": "FORM_TYPE_3",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "FORM_TYPE_3_LABEL"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "route-by-type",
+      "name": "Route by Form Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "CLIENT_EMAIL",
+        "subject": "=EMOJI_1 New FORM_TYPE_1_LABEL — {{ $json.name }}",
+        "message": "=<h2 style=\"color:ACCENT_COLOR;\">New FORM_TYPE_1_LABEL</h2><table style=\"border-collapse:collapse;width:100%;max-width:600px;font-family:sans-serif;\"><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Reference</td><td style=\"padding:12px;\">{{ $json.reference }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Name</td><td style=\"padding:12px;\">{{ $json.name }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Phone</td><td style=\"padding:12px;\"><a href=\"tel:{{ $json.phone }}\" style=\"color:ACCENT_COLOR;\">{{ $json.phone }}</a></td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Email</td><td style=\"padding:12px;\">{{ $json.email }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Service</td><td style=\"padding:12px;\">{{ $json.service }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Callback</td><td style=\"padding:12px;\">{{ $json.callback }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Message</td><td style=\"padding:12px;\">{{ $json.message }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Page</td><td style=\"padding:12px;\">{{ $json.page_url }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Submitted</td><td style=\"padding:12px;\">{{ $json.submitted_at }}</td></tr></table>",
+        "options": {}
+      },
+      "id": "email-type-1",
+      "name": "Email — FORM_TYPE_1_LABEL",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [920, 160]
+    },
+    {
+      "parameters": {
+        "sendTo": "CLIENT_EMAIL",
+        "subject": "=EMOJI_2 New FORM_TYPE_2_LABEL — {{ $json.name }}",
+        "message": "=<h2 style=\"color:ACCENT_COLOR;\">New FORM_TYPE_2_LABEL</h2><table style=\"border-collapse:collapse;width:100%;max-width:600px;font-family:sans-serif;\"><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Reference</td><td style=\"padding:12px;\">{{ $json.reference }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Name</td><td style=\"padding:12px;\">{{ $json.name }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Phone</td><td style=\"padding:12px;\"><a href=\"tel:{{ $json.phone }}\" style=\"color:ACCENT_COLOR;\">{{ $json.phone }}</a></td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Email</td><td style=\"padding:12px;\">{{ $json.email }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Service</td><td style=\"padding:12px;\">{{ $json.service }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Callback</td><td style=\"padding:12px;\">{{ $json.callback }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Message</td><td style=\"padding:12px;\">{{ $json.message }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Page</td><td style=\"padding:12px;\">{{ $json.page_url }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Submitted</td><td style=\"padding:12px;\">{{ $json.submitted_at }}</td></tr></table>",
+        "options": {}
+      },
+      "id": "email-type-2",
+      "name": "Email — FORM_TYPE_2_LABEL",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [920, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "CLIENT_EMAIL",
+        "subject": "=EMOJI_3 New FORM_TYPE_3_LABEL — {{ $json.name }}",
+        "message": "=<h2 style=\"color:ACCENT_COLOR;\">New FORM_TYPE_3_LABEL</h2><table style=\"border-collapse:collapse;width:100%;max-width:600px;font-family:sans-serif;\"><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Reference</td><td style=\"padding:12px;\">{{ $json.reference }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Name</td><td style=\"padding:12px;\">{{ $json.name }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Phone</td><td style=\"padding:12px;\"><a href=\"tel:{{ $json.phone }}\" style=\"color:ACCENT_COLOR;\">{{ $json.phone }}</a></td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Email</td><td style=\"padding:12px;\">{{ $json.email }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Service</td><td style=\"padding:12px;\">{{ $json.service }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Callback</td><td style=\"padding:12px;\">{{ $json.callback }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Message</td><td style=\"padding:12px;\">{{ $json.message }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Page</td><td style=\"padding:12px;\">{{ $json.page_url }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Submitted</td><td style=\"padding:12px;\">{{ $json.submitted_at }}</td></tr></table>",
+        "options": {}
+      },
+      "id": "email-type-3",
+      "name": "Email — FORM_TYPE_3_LABEL",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [920, 440]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, reference: $json.reference }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "respond-1",
+      "name": "Respond — 1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1160, 160]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, reference: $json.reference }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "respond-2",
+      "name": "Respond — 2",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1160, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, reference: $json.reference }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "respond-3",
+      "name": "Respond — 3",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1160, 440]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Format Submission", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Submission": {
+      "main": [
+        [{ "node": "Route by Form Type", "type": "main", "index": 0 }]
+      ]
+    },
+    "Route by Form Type": {
+      "main": [
+        [{ "node": "Email — FORM_TYPE_1_LABEL", "type": "main", "index": 0 }],
+        [{ "node": "Email — FORM_TYPE_2_LABEL", "type": "main", "index": 0 }],
+        [{ "node": "Email — FORM_TYPE_3_LABEL", "type": "main", "index": 0 }]
+      ]
+    },
+    "Email — FORM_TYPE_1_LABEL": {
+      "main": [
+        [{ "node": "Respond — 1", "type": "main", "index": 0 }]
+      ]
+    },
+    "Email — FORM_TYPE_2_LABEL": {
+      "main": [
+        [{ "node": "Respond — 2", "type": "main", "index": 0 }]
+      ]
+    },
+    "Email — FORM_TYPE_3_LABEL": {
+      "main": [
+        [{ "node": "Respond — 3", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": ["template"]
+}

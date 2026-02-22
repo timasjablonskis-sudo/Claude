@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agency Pricing Sheet</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a0a;
+      color: #f0f0f0;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #111 0%, #1a1a2e 100%);
+      border-bottom: 1px solid #222;
+      padding: 60px 40px;
+      text-align: center;
+    }
+
+    .agency-name {
+      font-size: 13px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #f5a623;
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: 48px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .header p {
+      font-size: 16px;
+      color: #888;
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 30px;
+    }
+
+    /* SECTION TITLES */
+    .section-title {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #f5a623;
+      margin-bottom: 8px;
+    }
+
+    .section-heading {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 40px;
+    }
+
+    /* BUILD PACKAGES */
+    .packages {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 80px;
+    }
+
+    .package {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 36px 30px;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+
+    .package:hover { border-color: #444; }
+
+    .package.featured {
+      border-color: #f5a623;
+      background: linear-gradient(160deg, #1a1500 0%, #111 100%);
+    }
+
+    .badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #f5a623;
+      color: #000;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 16px;
+      border-radius: 20px;
+    }
+
+    .package-name {
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 10px;
+    }
+
+    .package-price {
+      font-size: 48px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .package-price span {
+      font-size: 20px;
+      font-weight: 400;
+      color: #666;
+    }
+
+    .package-desc {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 28px;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .package-features {
+      list-style: none;
+      margin-bottom: 0;
+    }
+
+    .package-features li {
+      font-size: 14px;
+      color: #bbb;
+      padding: 8px 0;
+      border-bottom: 1px solid #1a1a1a;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.4;
+    }
+
+    .package-features li:last-child { border-bottom: none; }
+
+    .check { color: #f5a623; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .featured .check { color: #f5a623; }
+
+    /* MONTHLY PLANS */
+    .monthly-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 80px;
+    }
+
+    .monthly-card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 30px;
+      transition: border-color 0.2s;
+    }
+
+    .monthly-card:hover { border-color: #444; }
+    .monthly-card.featured { border-color: #f5a623; }
+
+    .monthly-name {
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .monthly-price {
+      font-size: 40px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .monthly-price span {
+      font-size: 16px;
+      font-weight: 400;
+      color: #555;
+    }
+
+    .monthly-desc {
+      font-size: 13px;
+      color: #555;
+      margin: 8px 0 20px;
+      line-height: 1.5;
+    }
+
+    .monthly-features {
+      list-style: none;
+    }
+
+    .monthly-features li {
+      font-size: 13px;
+      color: #aaa;
+      padding: 7px 0;
+      border-bottom: 1px solid #1a1a1a;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      line-height: 1.4;
+    }
+
+    .monthly-features li:last-child { border-bottom: none; }
+
+    /* ADD-ONS */
+    .addons-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 80px;
+    }
+
+    .addon {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .addon:hover { border-color: #333; }
+
+    .addon-info h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .addon-info p {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.4;
+    }
+
+    .addon-price {
+      font-size: 20px;
+      font-weight: 700;
+      color: #f5a623;
+      white-space: nowrap;
+    }
+
+    .addon-price small {
+      font-size: 12px;
+      font-weight: 400;
+      color: #555;
+    }
+
+    /* COSTS TABLE */
+    .costs-box {
+      background: #0d0d0d;
+      border: 1px solid #1e1e1e;
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 80px;
+    }
+
+    .costs-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .costs-table th {
+      text-align: left;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #555;
+      padding: 10px 16px;
+      border-bottom: 1px solid #1e1e1e;
+    }
+
+    .costs-table td {
+      padding: 14px 16px;
+      font-size: 14px;
+      color: #aaa;
+      border-bottom: 1px solid #141414;
+    }
+
+    .costs-table tr:last-child td { border-bottom: none; }
+
+    .costs-table .total td {
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      border-top: 1px solid #333;
+    }
+
+    .profit { color: #4ade80 !important; }
+    .cost { color: #f87171 !important; }
+    .revenue { color: #f5a623 !important; }
+
+    /* PROFIT SCENARIOS */
+    .scenarios {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 80px;
+    }
+
+    .scenario {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .scenario-clients {
+      font-size: 36px;
+      font-weight: 800;
+      color: #f5a623;
+    }
+
+    .scenario-label {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .scenario-revenue {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .scenario-profit {
+      font-size: 13px;
+      color: #4ade80;
+      margin-top: 4px;
+    }
+
+    /* NOTES */
+    .notes {
+      background: #0d0d0d;
+      border: 1px solid #1e1e1e;
+      border-left: 3px solid #f5a623;
+      border-radius: 0 12px 12px 0;
+      padding: 30px;
+      margin-bottom: 40px;
+    }
+
+    .notes h3 {
+      font-size: 14px;
+      color: #f5a623;
+      margin-bottom: 16px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .notes ul {
+      list-style: none;
+    }
+
+    .notes ul li {
+      font-size: 14px;
+      color: #888;
+      padding: 6px 0;
+      line-height: 1.5;
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .notes ul li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: #444;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 40px;
+      border-top: 1px solid #1a1a1a;
+      color: #333;
+      font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+      .packages, .monthly-grid { grid-template-columns: 1fr; }
+      .addons-grid { grid-template-columns: 1fr; }
+      .scenarios { grid-template-columns: repeat(2, 1fr); }
+      .header h1 { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="agency-name">Web Agency — Internal Pricing Sheet</div>
+    <h1>Pricing & Packages</h1>
+    <p>One-time build fees, monthly retainers, and add-on services.</p>
+  </div>
+
+  <div class="container">
+
+    <!-- BUILD PACKAGES -->
+    <div class="section-title">One-Time Fee</div>
+    <div class="section-heading">Website Build Packages</div>
+
+    <div class="packages">
+
+      <div class="package">
+        <div class="package-name">Starter</div>
+        <div class="package-price">$299<span> one-time</span></div>
+        <div class="package-desc">Simple professional site for small businesses that just need an online presence.</div>
+        <ul class="package-features">
+          <li><span class="check">✦</span> Up to 4 pages</li>
+          <li><span class="check">✦</span> Mobile responsive design</li>
+          <li><span class="check">✦</span> Contact form</li>
+          <li><span class="check">✦</span> Basic SEO setup</li>
+          <li><span class="check">✦</span> Delivered in 5-7 days</li>
+          <li><span class="check">✦</span> 1 round of revisions</li>
+        </ul>
+      </div>
+
+      <div class="package featured">
+        <div class="badge">Most Popular</div>
+        <div class="package-name">Professional</div>
+        <div class="package-price">$599<span> one-time</span></div>
+        <div class="package-desc">Full-featured site with AI chatbot and advanced features for growing businesses.</div>
+        <ul class="package-features">
+          <li><span class="check">✦</span> Up to 8 pages</li>
+          <li><span class="check">✦</span> Custom premium design</li>
+          <li><span class="check">✦</span> AI chatbot (24/7 lead capture)</li>
+          <li><span class="check">✦</span> Contact & service request forms</li>
+          <li><span class="check">✦</span> Full SEO optimization</li>
+          <li><span class="check">✦</span> Google Maps integration</li>
+          <li><span class="check">✦</span> Delivered in 7-10 days</li>
+          <li><span class="check">✦</span> 3 rounds of revisions</li>
+        </ul>
+      </div>
+
+      <div class="package">
+        <div class="package-name">Premium</div>
+        <div class="package-price">$999<span>+ one-time</span></div>
+        <div class="package-desc">Fully custom build for established businesses that want to stand out.</div>
+        <ul class="package-features">
+          <li><span class="check">✦</span> Unlimited pages</li>
+          <li><span class="check">✦</span> Bespoke design system</li>
+          <li><span class="check">✦</span> AI chatbot + custom workflows</li>
+          <li><span class="check">✦</span> Booking / scheduling system</li>
+          <li><span class="check">✦</span> Advanced SEO + analytics</li>
+          <li><span class="check">✦</span> Speed & performance optimization</li>
+          <li><span class="check">✦</span> Delivered in 14-21 days</li>
+          <li><span class="check">✦</span> Unlimited revisions</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- MONTHLY PLANS -->
+    <div class="section-title">Recurring</div>
+    <div class="section-heading">Monthly Maintenance Plans</div>
+
+    <div class="monthly-grid">
+
+      <div class="monthly-card">
+        <div class="monthly-name">Basic</div>
+        <div class="monthly-price">$29<span>/month</span></div>
+        <div class="monthly-desc">Keep the site live and secure. Nothing more, nothing less.</div>
+        <ul class="monthly-features">
+          <li><span class="check">✦</span> Hosting & uptime monitoring</li>
+          <li><span class="check">✦</span> SSL certificate managed</li>
+          <li><span class="check">✦</span> Domain renewal reminders</li>
+          <li><span class="check">✦</span> Email support (48hr response)</li>
+        </ul>
+      </div>
+
+      <div class="monthly-card featured">
+        <div class="monthly-name">Standard</div>
+        <div class="monthly-price">$59<span>/month</span></div>
+        <div class="monthly-desc">Everything in Basic plus content updates and priority support.</div>
+        <ul class="monthly-features">
+          <li><span class="check">✦</span> Everything in Basic</li>
+          <li><span class="check">✦</span> Up to 2hrs content updates/month</li>
+          <li><span class="check">✦</span> AI chatbot management</li>
+          <li><span class="check">✦</span> Monthly performance report</li>
+          <li><span class="check">✦</span> Priority support (24hr response)</li>
+        </ul>
+      </div>
+
+      <div class="monthly-card">
+        <div class="monthly-name">Premium</div>
+        <div class="monthly-price">$99<span>/month</span></div>
+        <div class="monthly-desc">Full ongoing management. They focus on business, you handle the rest.</div>
+        <ul class="monthly-features">
+          <li><span class="check">✦</span> Everything in Standard</li>
+          <li><span class="check">✦</span> Up to 5hrs updates/month</li>
+          <li><span class="check">✦</span> SEO monitoring & improvements</li>
+          <li><span class="check">✦</span> New page additions</li>
+          <li><span class="check">✦</span> Same-day emergency support</li>
+          <li><span class="check">✦</span> Quarterly strategy call</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- ADD-ONS -->
+    <div class="section-title">Optional</div>
+    <div class="section-heading">Add-On Services</div>
+
+    <div class="addons-grid">
+      <div class="addon">
+        <div class="addon-info">
+          <h4>AI Chatbot</h4>
+          <p>24/7 automated assistant that captures leads and answers questions</p>
+        </div>
+        <div class="addon-price">$149 <small>one-time</small></div>
+      </div>
+      <div class="addon">
+        <div class="addon-info">
+          <h4>Extra Page</h4>
+          <p>Additional custom-designed page added to existing site</p>
+        </div>
+        <div class="addon-price">$79 <small>per page</small></div>
+      </div>
+      <div class="addon">
+        <div class="addon-info">
+          <h4>Domain Setup</h4>
+          <p>Purchase, configure, and connect a domain to the live site</p>
+        </div>
+        <div class="addon-price">$49 <small>one-time</small></div>
+      </div>
+      <div class="addon">
+        <div class="addon-info">
+          <h4>Logo Design</h4>
+          <p>Custom logo designed to match the site's brand identity</p>
+        </div>
+        <div class="addon-price">$99 <small>one-time</small></div>
+      </div>
+      <div class="addon">
+        <div class="addon-info">
+          <h4>Contact / Booking Form</h4>
+          <p>Custom form with email notifications and automated responses</p>
+        </div>
+        <div class="addon-price">$79 <small>one-time</small></div>
+      </div>
+      <div class="addon">
+        <div class="addon-info">
+          <h4>Rush Delivery</h4>
+          <p>Guaranteed delivery within 48-72 hours</p>
+        </div>
+        <div class="addon-price">$150 <small>flat fee</small></div>
+      </div>
+    </div>
+
+    <!-- YOUR COSTS -->
+    <div class="section-title">Internal Reference</div>
+    <div class="section-heading">Your Monthly Costs vs Revenue</div>
+
+    <div class="costs-box">
+      <table class="costs-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Cost</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Claude Pro</td>
+            <td class="cost">-$20/mo</td>
+            <td>AI assistant for building sites</td>
+          </tr>
+          <tr>
+            <td>Hostinger Server</td>
+            <td class="cost">-$6/mo</td>
+            <td>Hosts n8n + all client sites</td>
+          </tr>
+          <tr class="total">
+            <td>Total Expenses</td>
+            <td class="cost">-$26/mo</td>
+            <td>Fixed — doesn't grow with clients</td>
+          </tr>
+          <tr class="total">
+            <td>Break-even point</td>
+            <td class="revenue">1 client @ $29/mo</td>
+            <td>Every client after = pure profit</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PROFIT SCENARIOS -->
+    <div class="section-title">Projections</div>
+    <div class="section-heading">Monthly Profit Scenarios</div>
+    <p style="color:#555; font-size:14px; margin-bottom:30px; margin-top:-30px;">Based on Standard plan ($59/month) per client. Does not include one-time build fees.</p>
+
+    <div class="scenarios">
+      <div class="scenario">
+        <div class="scenario-clients">1</div>
+        <div class="scenario-label">Client</div>
+        <div class="scenario-revenue">$59/mo</div>
+        <div class="scenario-profit">+$33 profit</div>
+      </div>
+      <div class="scenario">
+        <div class="scenario-clients">3</div>
+        <div class="scenario-label">Clients</div>
+        <div class="scenario-revenue">$177/mo</div>
+        <div class="scenario-profit">+$151 profit</div>
+      </div>
+      <div class="scenario">
+        <div class="scenario-clients">5</div>
+        <div class="scenario-label">Clients</div>
+        <div class="scenario-revenue">$295/mo</div>
+        <div class="scenario-profit">+$269 profit</div>
+      </div>
+      <div class="scenario">
+        <div class="scenario-clients">10</div>
+        <div class="scenario-label">Clients</div>
+        <div class="scenario-revenue">$590/mo</div>
+        <div class="scenario-profit">+$564 profit</div>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="notes">
+      <h3>Important Notes</h3>
+      <ul>
+        <li>Client is responsible for purchasing their own domain (~$10-15/year)</li>
+        <li>All sites hosted on your server — no extra hosting cost per client</li>
+        <li>Build fee is charged upfront before work begins</li>
+        <li>Monthly plan starts after site goes live</li>
+        <li>Unused update hours do not roll over to next month</li>
+        <li>30-day notice required to cancel monthly plan</li>
+        <li>Rush delivery fee applies on top of package price</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    Confidential — Internal Agency Pricing Document
+  </div>
+
+</body>
+</html>

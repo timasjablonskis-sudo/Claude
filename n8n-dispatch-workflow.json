@@ -1,0 +1,318 @@
+{
+  "name": "Dispatch Form Submissions",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dispatch-form",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "dispatch-form"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ref",
+              "name": "reference",
+              "value": "={{ 'CTR-' + $now.toMillis().toString(36).toUpperCase().slice(-6) }}",
+              "type": "string"
+            },
+            {
+              "id": "type",
+              "name": "form_type",
+              "value": "={{ $json.body.form_type }}",
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "name": "name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "name": "phone",
+              "value": "={{ $json.body.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "email",
+              "name": "email",
+              "value": "={{ $json.body.email || 'Not provided' }}",
+              "type": "string"
+            },
+            {
+              "id": "service",
+              "name": "service",
+              "value": "={{ $json.body.service }}",
+              "type": "string"
+            },
+            {
+              "id": "truck",
+              "name": "truck",
+              "value": "={{ $json.body.truck || 'Not provided' }}",
+              "type": "string"
+            },
+            {
+              "id": "callback",
+              "name": "callback",
+              "value": "={{ $json.body.callback || 'Anytime' }}",
+              "type": "string"
+            },
+            {
+              "id": "notes",
+              "name": "notes",
+              "value": "={{ $json.body.notes || 'None' }}",
+              "type": "string"
+            },
+            {
+              "id": "company",
+              "name": "company",
+              "value": "={{ $json.body.company || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "fleet_size",
+              "name": "fleet_size",
+              "value": "={{ $json.body.fleet_size || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "makes",
+              "name": "makes",
+              "value": "={{ $json.body.makes || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "submitted_at",
+              "name": "submitted_at",
+              "value": "={{ $json.body.submitted_at }}",
+              "type": "string"
+            },
+            {
+              "id": "page_url",
+              "name": "page_url",
+              "value": "={{ $json.body.page_url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-data",
+      "name": "Format Submission",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.form_type }}",
+                    "rightValue": "dispatch",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Dispatch"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.form_type }}",
+                    "rightValue": "fleet-inquiry",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Fleet"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.form_type }}",
+                    "rightValue": "service-request",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Service"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "route-by-type",
+      "name": "Route by Form Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "timasjablonskis@gmail.com",
+        "subject": "=🚨 New Dispatch Request — {{ $json.name }} ({{ $json.service }})",
+        "message": "=<h2 style=\"color:#F5A623;\">New Dispatch Request</h2><table style=\"border-collapse:collapse;width:100%;max-width:600px;font-family:sans-serif;\"><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Reference</td><td style=\"padding:12px;\">{{ $json.reference }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Name</td><td style=\"padding:12px;\">{{ $json.name }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Phone</td><td style=\"padding:12px;\"><a href=\"tel:{{ $json.phone }}\" style=\"color:#F5A623;\">{{ $json.phone }}</a></td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Service</td><td style=\"padding:12px;\">{{ $json.service }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Truck</td><td style=\"padding:12px;\">{{ $json.truck }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Callback</td><td style=\"padding:12px;\">{{ $json.callback }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Notes</td><td style=\"padding:12px;\">{{ $json.notes }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Submitted</td><td style=\"padding:12px;\">{{ $json.submitted_at }}</td></tr></table>",
+        "options": {}
+      },
+      "id": "email-dispatch",
+      "name": "Email — Dispatch",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [920, 160]
+    },
+    {
+      "parameters": {
+        "sendTo": "timasjablonskis@gmail.com",
+        "subject": "=🚛 Fleet Inquiry — {{ $json.name }} / {{ $json.company }} ({{ $json.fleet_size }})",
+        "message": "=<h2 style=\"color:#F5A623;\">New Fleet Inquiry</h2><table style=\"border-collapse:collapse;width:100%;max-width:600px;font-family:sans-serif;\"><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Reference</td><td style=\"padding:12px;\">{{ $json.reference }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Contact</td><td style=\"padding:12px;\">{{ $json.name }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Company</td><td style=\"padding:12px;\">{{ $json.company }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Phone</td><td style=\"padding:12px;\"><a href=\"tel:{{ $json.phone }}\" style=\"color:#F5A623;\">{{ $json.phone }}</a></td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Email</td><td style=\"padding:12px;\"><a href=\"mailto:{{ $json.email }}\" style=\"color:#F5A623;\">{{ $json.email }}</a></td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Fleet Size</td><td style=\"padding:12px;\">{{ $json.fleet_size }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Makes</td><td style=\"padding:12px;\">{{ $json.makes }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Service</td><td style=\"padding:12px;\">{{ $json.service }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Notes</td><td style=\"padding:12px;\">{{ $json.notes }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Submitted</td><td style=\"padding:12px;\">{{ $json.submitted_at }}</td></tr></table>",
+        "options": {}
+      },
+      "id": "email-fleet",
+      "name": "Email — Fleet",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [920, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "timasjablonskis@gmail.com",
+        "subject": "=🔧 Service Request — {{ $json.name }} ({{ $json.service }})",
+        "message": "=<h2 style=\"color:#F5A623;\">New Service Request</h2><table style=\"border-collapse:collapse;width:100%;max-width:600px;font-family:sans-serif;\"><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Reference</td><td style=\"padding:12px;\">{{ $json.reference }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Name</td><td style=\"padding:12px;\">{{ $json.name }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Phone</td><td style=\"padding:12px;\"><a href=\"tel:{{ $json.phone }}\" style=\"color:#F5A623;\">{{ $json.phone }}</a></td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Email</td><td style=\"padding:12px;\">{{ $json.email }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Service</td><td style=\"padding:12px;\">{{ $json.service }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Truck</td><td style=\"padding:12px;\">{{ $json.truck }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Callback</td><td style=\"padding:12px;\">{{ $json.callback }}</td></tr><tr style=\"background:#1a1a1a;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Notes</td><td style=\"padding:12px;\">{{ $json.notes }}</td></tr><tr style=\"background:#111;color:#fff;\"><td style=\"padding:12px;font-weight:bold;\">Submitted</td><td style=\"padding:12px;\">{{ $json.submitted_at }}</td></tr></table>",
+        "options": {}
+      },
+      "id": "email-service",
+      "name": "Email — Service",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [920, 440]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, reference: $json.reference }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-dispatch",
+      "name": "Respond — Dispatch",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1160, 160]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, reference: $json.reference }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-fleet",
+      "name": "Respond — Fleet",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1160, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, reference: $json.reference }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-service",
+      "name": "Respond — Service",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1160, 440]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Format Submission", "type": "main", "index": 0 }]
+      ]
+    },
+    "Format Submission": {
+      "main": [
+        [{ "node": "Route by Form Type", "type": "main", "index": 0 }]
+      ]
+    },
+    "Route by Form Type": {
+      "main": [
+        [{ "node": "Email — Dispatch", "type": "main", "index": 0 }],
+        [{ "node": "Email — Fleet", "type": "main", "index": 0 }],
+        [{ "node": "Email — Service", "type": "main", "index": 0 }]
+      ]
+    },
+    "Email — Dispatch": {
+      "main": [
+        [{ "node": "Respond — Dispatch", "type": "main", "index": 0 }]
+      ]
+    },
+    "Email — Fleet": {
+      "main": [
+        [{ "node": "Respond — Fleet", "type": "main", "index": 0 }]
+      ]
+    },
+    "Email — Service": {
+      "main": [
+        [{ "node": "Respond — Service", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
